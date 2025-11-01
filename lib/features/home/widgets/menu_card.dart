@@ -5,6 +5,7 @@ class MenuCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final Color color;
+  final Color? textColor;
   final VoidCallback onTap;
 
   const MenuCard({
@@ -12,12 +13,15 @@ class MenuCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.color,
+    this.textColor,
     required this.onTap,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final displayTextColor = textColor ?? color;
+    
     return Card(
       elevation: 0,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -26,46 +30,42 @@ class MenuCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
+              Icon(icon, color: displayTextColor, size: 32),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Icon(icon, color: color, size: 28),
-                        const SizedBox(width: 12),
-                        Text(
-                          title,
-                          style: TextStyle(
-                            color: color,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: displayTextColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        color: Colors.black54,
-                        fontSize: 13,
+                      style: TextStyle(
+                        color: displayTextColor.withOpacity(0.8),
+                        fontSize: 14,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios,
-                color: Colors.black38,
-                size: 16,
+                color: displayTextColor.withOpacity(0.6),
+                size: 18,
               ),
             ],
           ),
