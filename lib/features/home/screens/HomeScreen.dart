@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reservation_app/features/home/widgets/menu_card.dart';
 import 'package:my_reservation_app/features/reservations/screens/reservations_screen.dart';
+import 'package:my_reservation_app/features/reservations/screens/general_reservations_screen.dart';
 import 'package:my_reservation_app/providers/reservation_provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -75,7 +76,12 @@ class HomeScreen extends StatelessWidget {
               color: const Color(0xFFE1D5F5), // Roxo suave
               textColor: const Color(0xFF6A1B9A), // Roxo escuro para texto
               onTap: () {
-              // Ação ao tocar no card
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const GeneralReservationsScreen(),
+                  ),
+                );
               },
             ),
           ],

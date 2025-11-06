@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reservation_app/models/reservation.dart';
 import 'package:my_reservation_app/providers/reservation_provider.dart';
+import 'package:my_reservation_app/widgets/custom_dropdown.dart';
 
 class ReservationsScreen extends StatefulWidget {
   final int initialTab;
@@ -17,10 +18,7 @@ class _ReservationsScreenState extends State<ReservationsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _showSuccessBanner = false;
-  bool _showRoomDropdown = false;
-  bool _showEquipmentDropdown = false;
-  bool _showPeriodDropdown = false;
-  
+
   // New Reservation Form State
   String? selectedRoom;
   String? selectedEquipment;
@@ -107,269 +105,6 @@ class _ReservationsScreenState extends State<ReservationsScreen>
     }
   }
 
-  Widget _buildDropdownSelector({
-    required String label,
-    required String? selectedValue,
-    required List<String> items,
-    required bool isExpanded,
-    required Function(bool) onToggle,
-    required Function(String) onSelect,
-    IconData? icon,
-    bool useOverlay = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.grey,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        useOverlay && isExpanded
-            ? Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // Main selector button
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        onToggle(!isExpanded);
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFF2962FF),
-                          width: 2,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          if (icon != null) ...[
-                            Icon(icon, color: Colors.grey),
-                            const SizedBox(width: 12),
-                          ],
-                          Expanded(
-                            child: Text(
-                              selectedValue ?? 'Selecione',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: selectedValue != null ? Colors.black : Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Overlay dropdown list (expands upward)
-                  Positioned(
-                    bottom: 56,
-                    left: 0,
-                    right: 0,
-                    child: Material(
-                      elevation: 8,
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFF2962FF),
-                            width: 2,
-                          ),
-                        ),
-                        constraints: const BoxConstraints(maxHeight: 300),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Header with blue background
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF2962FF),
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(10),
-                                  topRight: Radius.circular(10),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      selectedValue ?? 'Selecione',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Items list
-                            Flexible(
-                              child: ListView(
-                                shrinkWrap: true,
-                                padding: EdgeInsets.zero,
-                                children: items.map((item) {
-                                  final isRed = item.contains('Não se Aplica');
-                                  return InkWell(
-                                    onTap: () {
-                                      onSelect(item);
-                                      setState(() {
-                                        onToggle(false);
-                                      });
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(color: Colors.grey.shade200),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        item,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: isRed ? Colors.red : Colors.black87,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            : Column(
-                children: [
-                  // Main selector button
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        onToggle(!isExpanded);
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: isExpanded
-                            ? const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                              )
-                            : BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isExpanded ? const Color(0xFF2962FF) : Colors.grey.shade300,
-                          width: isExpanded ? 2 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          if (icon != null) ...[
-                            Icon(icon, color: Colors.grey),
-                            const SizedBox(width: 12),
-                          ],
-                          Expanded(
-                            child: Text(
-                              selectedValue ?? 'Selecione',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: selectedValue != null ? Colors.black : Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Dropdown list
-                  if (isExpanded)
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(12),
-                          bottomRight: Radius.circular(12),
-                        ),
-                        border: Border(
-                          left: BorderSide(color: const Color(0xFF2962FF), width: 2),
-                          right: BorderSide(color: const Color(0xFF2962FF), width: 2),
-                          bottom: BorderSide(color: const Color(0xFF2962FF), width: 2),
-                        ),
-                      ),
-                      constraints: const BoxConstraints(maxHeight: 250),
-                      child: ListView(
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        children: [
-                          // Header with blue background
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF2962FF),
-                            ),
-                            child: Text(
-                              selectedValue ?? 'Selecione a Sala',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          // Items list
-                          ...items.map((item) {
-                            final isRed = item.contains('Não se Aplica');
-                            return InkWell(
-                              onTap: () {
-                                onSelect(item);
-                                setState(() {
-                                  onToggle(false);
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(color: Colors.grey.shade200),
-                                  ),
-                                ),
-                                child: Text(
-                                  item,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: isRed ? Colors.red : Colors.black87,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-      ],
-    );
-  }
-
   void _makeReservation() {
     if (selectedRoom == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -405,157 +140,167 @@ class _ReservationsScreenState extends State<ReservationsScreen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFE8F5E9),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFF4CAF50), width: 2),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.check_circle,
-              color: Color(0xFF4CAF50),
-              size: 64,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFFE8F5E9),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFF4CAF50), width: 2),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Reserva efetuada!',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2E7D32),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              selectedRoom ?? '',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2E7D32),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '(${_formatPeriod(selectedPeriod)})',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF2E7D32),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Add reservation to provider
-                  Provider.of<ReservationProvider>(context, listen: false)
-                      .addReservation(reservation);
-                  
-                  Navigator.pop(context); // Close dialog
-                  
-                  // Switch to My Reservations tab and show banner
-                  _tabController.animateTo(1);
-                  setState(() {
-                    _showSuccessBanner = true;
-                  });
-                  
-                  // Hide banner after 3 seconds
-                  Future.delayed(const Duration(seconds: 3), () {
-                    if (mounted) {
-                      setState(() {
-                        _showSuccessBanner = false;
-                      });
-                    }
-                  });
-                  
-                  // Reset form
-                  setState(() {
-                    selectedRoom = null;
-                    selectedEquipment = null;
-                    selectedDate = DateTime.now();
-                    selectedPeriod = null;
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.check_circle,
+                  color: Color(0xFF4CAF50),
+                  size: 64,
                 ),
-                child: const Text(
-                  'OK',
+                const SizedBox(height: 16),
+                const Text(
+                  'Reserva efetuada!',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Color(0xFF2E7D32),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  selectedRoom ?? '',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2E7D32),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '(${_formatPeriod(selectedPeriod)})',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF2E7D32),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Add reservation to provider
+                      Provider.of<ReservationProvider>(
+                        context,
+                        listen: false,
+                      ).addReservation(reservation);
+
+                      Navigator.pop(context); // Close dialog
+
+                      // Switch to My Reservations tab and show banner
+                      _tabController.animateTo(1);
+                      setState(() {
+                        _showSuccessBanner = true;
+                      });
+
+                      // Hide banner after 3 seconds
+                      Future.delayed(const Duration(seconds: 3), () {
+                        if (mounted) {
+                          setState(() {
+                            _showSuccessBanner = false;
+                          });
+                        }
+                      });
+
+                      // Reset form
+                      setState(() {
+                        selectedRoom = null;
+                        selectedEquipment = null;
+                        selectedDate = DateTime.now();
+                        selectedPeriod = null;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4CAF50),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
   void _cancelReservation(Reservation reservation) {
     // Check if cancellation is within 30 minutes of the start time
     final canCancel = _canCancelReservation(reservation);
-    
+
     if (!canCancel) {
       _showRestrictedCancellationDialog();
       return;
     }
-    
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cancelar Reserva'),
-        content: const Text('Tem certeza que deseja cancelar esta reserva?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Não'),
-          ),
-          TextButton(
-            onPressed: () {
-              // Remove from provider
-              Provider.of<ReservationProvider>(context, listen: false)
-                  .removeReservation(reservation.id);
-              
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Reserva cancelada com sucesso!'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-            },
-            child: const Text(
-              'Sim, Cancelar',
-              style: TextStyle(color: Colors.red),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Cancelar Reserva'),
+            content: const Text(
+              'Tem certeza que deseja cancelar esta reserva?',
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Não'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Remove from provider
+                  Provider.of<ReservationProvider>(
+                    context,
+                    listen: false,
+                  ).removeReservation(reservation.id);
+
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Reserva cancelada com sucesso!'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                },
+                child: const Text(
+                  'Sim, Cancelar',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   bool _canCancelReservation(Reservation reservation) {
     // Extract start time from period
-    final periodMatch = RegExp(r'(\d{2}):(\d{2})').firstMatch(reservation.period ?? '');
+    final periodMatch = RegExp(
+      r'(\d{2}):(\d{2})',
+    ).firstMatch(reservation.period ?? '');
     if (periodMatch == null) return true;
-    
+
     final hour = int.parse(periodMatch.group(1)!);
     final minute = int.parse(periodMatch.group(2)!);
-    
+
     // Create DateTime for reservation start
     final reservationStart = DateTime(
       reservation.date.year,
@@ -564,95 +309,98 @@ class _ReservationsScreenState extends State<ReservationsScreen>
       hour,
       minute,
     );
-    
+
     // Check if current time is more than 30 minutes before start
     final now = DateTime.now();
     final difference = reservationStart.difference(now);
-    
+
     return difference.inMinutes > 30;
   }
 
   void _showRestrictedCancellationDialog() {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Cancelamento Restrito',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFD32F2F),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                   const Text(
-                    'Cancelamento Restrito',
+                    'Esta reserva não pode ser cancelada. O prazo limite para cancelamento é de **30 minutos** antes do horário de início do agendamento.',
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFD32F2F),
+                      fontSize: 16,
+                      color: Colors.black87,
+                      height: 1.5,
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.grey),
-                    onPressed: () => Navigator.pop(context),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Por favor, entre em contato com a administração caso seja uma emergência.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2962FF),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Entendido',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Esta reserva não pode ser cancelada. O prazo limite para cancelamento é de **30 minutos** antes do horário de início do agendamento.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Por favor, entre em contato com a administração caso seja uma emergência.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2962FF),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Entendido',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 
   String _formatPeriod(String? period) {
     if (period == null) return '';
-    final timeMatch = RegExp(r'\((\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})\)').firstMatch(period);
+    final timeMatch = RegExp(
+      r'\((\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})\)',
+    ).firstMatch(period);
     if (timeMatch != null) {
       return '${timeMatch.group(1)} - ${timeMatch.group(2)}';
     }
@@ -672,10 +420,7 @@ class _ReservationsScreenState extends State<ReservationsScreen>
               SizedBox(width: 12),
               Text(
                 'Nova Reserva',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -707,20 +452,10 @@ class _ReservationsScreenState extends State<ReservationsScreen>
           const SizedBox(height: 24),
 
           // Room Selection
-          _buildDropdownSelector(
+          CustomDropdown(
             label: 'Sala / Local Físico (Obrigatório)',
             selectedValue: selectedRoom,
             items: rooms,
-            isExpanded: _showRoomDropdown,
-            onToggle: (expanded) {
-              setState(() {
-                _showRoomDropdown = expanded;
-                if (expanded) {
-                  _showEquipmentDropdown = false;
-                  _showPeriodDropdown = false;
-                }
-              });
-            },
             onSelect: (value) {
               setState(() {
                 selectedRoom = value;
@@ -731,20 +466,10 @@ class _ReservationsScreenState extends State<ReservationsScreen>
           const SizedBox(height: 24),
 
           // Equipment Selection
-          _buildDropdownSelector(
+          CustomDropdown(
             label: 'Equipamento Móvel (Opcional)',
             selectedValue: selectedEquipment,
             items: equipment,
-            isExpanded: _showEquipmentDropdown,
-            onToggle: (expanded) {
-              setState(() {
-                _showEquipmentDropdown = expanded;
-                if (expanded) {
-                  _showRoomDropdown = false;
-                  _showPeriodDropdown = false;
-                }
-              });
-            },
             onSelect: (value) {
               setState(() {
                 selectedEquipment = value;
@@ -782,8 +507,11 @@ class _ReservationsScreenState extends State<ReservationsScreen>
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.calendar_today,
-                                color: Colors.grey, size: 20),
+                            const Icon(
+                              Icons.calendar_today,
+                              color: Colors.grey,
+                              size: 20,
+                            ),
                             const SizedBox(width: 12),
                             Text(
                               DateFormat('dd/MM/yyyy').format(selectedDate),
@@ -799,27 +527,17 @@ class _ReservationsScreenState extends State<ReservationsScreen>
               const SizedBox(width: 16),
               // Period
               Expanded(
-                child: _buildDropdownSelector(
+                child: CustomDropdown(
                   label: 'Período',
                   selectedValue: selectedPeriod,
                   items: periods,
-                  isExpanded: _showPeriodDropdown,
-                  onToggle: (expanded) {
-                    setState(() {
-                      _showPeriodDropdown = expanded;
-                      if (expanded) {
-                        _showRoomDropdown = false;
-                        _showEquipmentDropdown = false;
-                      }
-                    });
-                  },
                   onSelect: (value) {
                     setState(() {
                       selectedPeriod = value;
                     });
                   },
                   icon: Icons.access_time,
-                  useOverlay: true,
+                  expandUpward: true,
                 ),
               ),
             ],
@@ -858,7 +576,8 @@ class _ReservationsScreenState extends State<ReservationsScreen>
     return Consumer<ReservationProvider>(
       builder: (context, reservationProvider, child) {
         final reservations = reservationProvider.reservations;
-        final latestReservation = reservations.isNotEmpty ? reservations.last : null;
+        final latestReservation =
+            reservations.isNotEmpty ? reservations.last : null;
 
         return Column(
           children: [
@@ -908,200 +627,216 @@ class _ReservationsScreenState extends State<ReservationsScreen>
 
             // Reservations List
             Expanded(
-              child: reservations.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Nenhuma reserva encontrada',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
+              child:
+                  reservations.isEmpty
+                      ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 64,
+                              color: Colors.grey[400],
                             ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: reservations.length,
-                      itemBuilder: (context, index) {
-                        final reservation = reservations[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFF2962FF),
-                              width: 2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Nenhuma reserva encontrada',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[600],
                               ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Room Name
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.meeting_room,
-                                      color: Color(0xFF2962FF),
-                                      size: 24,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        reservation.room ?? 'Sala não especificada',
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                            ),
+                          ],
+                        ),
+                      )
+                      : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: reservations.length,
+                        itemBuilder: (context, index) {
+                          final reservation = reservations[index];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF2962FF),
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.1),
+                                  spreadRadius: 1,
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
                                 ),
-                                const SizedBox(height: 12),
-
-                                // Professor Name
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.person,
-                                      color: Colors.grey,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      reservation.professorName,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-
-                                // Equipment
-                                if (reservation.equipment != null &&
-                                    reservation.equipment != 'Não se Aplica (Apenas Sala)')
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Room Name
                                   Row(
                                     children: [
                                       const Icon(
-                                        Icons.devices,
-                                        color: Color(0xFF9C27B0),
-                                        size: 20,
+                                        Icons.meeting_room,
+                                        color: Color(0xFF2962FF),
+                                        size: 24,
                                       ),
                                       const SizedBox(width: 8),
-                                      Text(
-                                        'Equipamento Anexo: ${reservation.equipment}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF9C27B0),
-                                          fontWeight: FontWeight.w500,
+                                      Expanded(
+                                        child: Text(
+                                          reservation.room ??
+                                              'Sala não especificada',
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                if (reservation.equipment != null &&
-                                    reservation.equipment != 'Não se Aplica (Apenas Sala)')
+                                  const SizedBox(height: 12),
+
+                                  // Professor Name
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.person,
+                                        color: Colors.grey,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        reservation.professorName,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   const SizedBox(height: 8),
 
-                                // Date and Time
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.calendar_today,
-                                      color: Colors.grey,
-                                      size: 18,
+                                  // Equipment
+                                  if (reservation.equipment != null &&
+                                      reservation.equipment !=
+                                          'Não se Aplica (Apenas Sala)')
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.devices,
+                                          color: Color(0xFF9C27B0),
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Equipamento Anexo: ${reservation.equipment}',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xFF9C27B0),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      DateFormat('dd/MM/yyyy').format(reservation.date),
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    const Icon(
-                                      Icons.access_time,
-                                      color: Colors.grey,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      _formatPeriod(reservation.period),
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
+                                  if (reservation.equipment != null &&
+                                      reservation.equipment !=
+                                          'Não se Aplica (Apenas Sala)')
+                                    const SizedBox(height: 8),
 
-                                // Cancel Button
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: () => _cancelReservation(reservation),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFFE53935),
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
+                                  // Date and Time
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.calendar_today,
+                                        color: Colors.grey,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        DateFormat(
+                                          'dd/MM/yyyy',
+                                        ).format(reservation.date),
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[700],
                                         ),
-                                        child: const Text(
-                                          'Cancelar',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      const Icon(
+                                        Icons.access_time,
+                                        color: Colors.grey,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        _formatPeriod(reservation.period),
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Cancel Button
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed:
+                                              () => _cancelReservation(
+                                                reservation,
+                                              ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFFE53935,
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Cancelar',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    if (!_canCancelReservation(reservation))
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 8),
-                                        child: Text(
-                                          '(Prazo expirado)',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                            fontStyle: FontStyle.italic,
+                                      if (!_canCancelReservation(reservation))
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 8,
+                                          ),
+                                          child: Text(
+                                            '(Prazo expirado)',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey[600],
+                                              fontStyle: FontStyle.italic,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      ),
             ),
           ],
         );
@@ -1118,7 +853,8 @@ class _ReservationsScreenState extends State<ReservationsScreen>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.home, color: Colors.white),
-          onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+          onPressed:
+              () => Navigator.popUntil(context, (route) => route.isFirst),
         ),
         title: const Text(
           'Bem-vindo',
@@ -1149,15 +885,13 @@ class _ReservationsScreenState extends State<ReservationsScreen>
             fontWeight: FontWeight.normal,
           ),
           tabs: [
-            Tab(
-              icon: const Icon(Icons.book),
-              text: 'Nova Reserva',
-            ),
+            Tab(icon: const Icon(Icons.book), text: 'Nova Reserva'),
             Consumer<ReservationProvider>(
               builder: (context, reservationProvider, child) {
                 return Tab(
                   icon: const Icon(Icons.calendar_today),
-                  text: 'Minhas Reservas (${reservationProvider.reservationCount})',
+                  text:
+                      'Minhas Reservas (${reservationProvider.reservationCount})',
                 );
               },
             ),
@@ -1166,10 +900,7 @@ class _ReservationsScreenState extends State<ReservationsScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildNewReservationTab(),
-          _buildMyReservationsTab(),
-        ],
+        children: [_buildNewReservationTab(), _buildMyReservationsTab()],
       ),
     );
   }
