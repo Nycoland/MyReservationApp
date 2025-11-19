@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:my_reservation_app/features/home/screens/HomeScreen.dart';
+import 'package:my_reservation_app/features/auth/screens/login_screen.dart';
 import 'package:my_reservation_app/providers/reservation_provider.dart';
 
 void main() {
@@ -19,11 +19,8 @@ class MyReservation extends StatelessWidget {
         title: 'MyReservation',
         theme: ThemeData(primarySwatch: Colors.blue),
         initialRoute: '/',
-        routes: {
-          '/': (context) => const HomeScreen(),
-        },
+        routes: {'/': (context) => const LoginScreen()},
       ),
     );
   }
 }
-

@@ -1,23 +1,26 @@
 class Reservation {
   final String id;
+  final String userId;
   final String professorName;
-  final String? room;
-  final String? equipment;
+  final String room;
+  final String equipment;
   final DateTime date;
-  final String? period;
+  final String period;
 
   Reservation({
     required this.id,
+    required this.userId,
     required this.professorName,
-    this.room,
-    this.equipment,
+    required this.room,
+    required this.equipment,
     required this.date,
-    this.period,
+    required this.period,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'userId': userId,
       'professorName': professorName,
       'room': room,
       'equipment': equipment,
@@ -28,12 +31,13 @@ class Reservation {
 
   factory Reservation.fromJson(Map<String, dynamic> json) {
     return Reservation(
-      id: json['id'],
-      professorName: json['professorName'],
-      room: json['room'],
-      equipment: json['equipment'],
-      date: DateTime.parse(json['date']),
-      period: json['period'],
+      id: json['id'] as String,
+      userId: json['userId'] as String? ?? '',
+      professorName: json['professorName'] as String,
+      room: json['room'] as String? ?? '',
+      equipment: json['equipment'] as String? ?? '',
+      date: DateTime.parse(json['date'] as String),
+      period: json['period'] as String? ?? '',
     );
   }
 }

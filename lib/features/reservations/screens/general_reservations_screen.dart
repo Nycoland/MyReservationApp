@@ -3,12 +3,15 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reservation_app/models/reservation.dart';
 import 'package:my_reservation_app/providers/reservation_provider.dart';
+import 'package:my_reservation_app/widgets/app_drawer.dart';
+import 'package:my_reservation_app/features/home/screens/HomeScreen.dart';
 
 class GeneralReservationsScreen extends StatefulWidget {
   const GeneralReservationsScreen({super.key});
 
   @override
-  State<GeneralReservationsScreen> createState() => _GeneralReservationsScreenState();
+  State<GeneralReservationsScreen> createState() =>
+      _GeneralReservationsScreenState();
 }
 
 class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
@@ -43,13 +46,13 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
 
   List<Reservation> _getReservationsForDate(List<Reservation> allReservations) {
     return allReservations.where((reservation) {
-      return reservation.date.year == selectedDate.year &&
-          reservation.date.month == selectedDate.month &&
-          reservation.date.day == selectedDate.day;
-    }).toList()
+        return reservation.date.year == selectedDate.year &&
+            reservation.date.month == selectedDate.month &&
+            reservation.date.day == selectedDate.day;
+      }).toList()
       ..sort((a, b) {
         // Sort by period/time
-        return (a.period ?? '').compareTo(b.period ?? '');
+        return (a.period).compareTo(b.period);
       });
   }
 
@@ -112,10 +115,10 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Room/Location
                     Text(
-                      reservation.room ?? 'Sala não especificada',
+                      reservation.room,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -123,7 +126,7 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Professor name
                     Row(
                       children: [
@@ -138,13 +141,18 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
                         ),
                       ],
                     ),
-                    
+
                     // Equipment if applicable
-                    if (reservation.equipment != 'Não se Aplica (Apenas Sala)') ...[
+                    if (reservation.equipment !=
+                        'Não se Aplica (Apenas Sala)') ...[
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(Icons.computer, size: 16, color: Color(0xFFAB47BC)),
+                          const Icon(
+                            Icons.computer,
+                            size: 16,
+                            color: Color(0xFFAB47BC),
+                          ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
@@ -159,13 +167,17 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
                         ],
                       ),
                     ],
-                    
+
                     const SizedBox(height: 12),
-                    
+
                     // Date and time
                     Row(
                       children: [
-                        Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade600),
+                        Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: Colors.grey.shade600,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           DateFormat('dd/MM/yyyy').format(reservation.date),
@@ -175,10 +187,14 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
+                        Icon(
+                          Icons.access_time,
+                          size: 16,
+                          color: Colors.grey.shade600,
+                        ),
                         const SizedBox(width: 6),
                         Text(
-                          reservation.period ?? 'Período não especificado',
+                          reservation.period,
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade700,
@@ -205,7 +221,13 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              (route) => false,
+            );
+          },
         ),
         title: const Row(
           children: [
@@ -222,12 +244,18 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onPressed: () {},
+          Builder(
+            builder:
+                (context) => IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () {
+                    Scaffold.of(context).openEndDrawer();
+                  },
+                ),
           ),
         ],
       ),
+      endDrawer: const AppDrawer(currentRoute: 'general_reservations'),
       body: Column(
         children: [
           // Header section
@@ -248,18 +276,18 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
                 const SizedBox(height: 8),
                 const Text(
                   'Visualização de todas as reservas de salas e equipamentos.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Date selector
                 InkWell(
                   onTap: () => _selectDate(context),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
@@ -267,7 +295,11 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.calendar_today, color: Color(0xFF2962FF), size: 20),
+                        const Icon(
+                          Icons.calendar_today,
+                          color: Color(0xFF2962FF),
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Text(
                           DateFormat('dd/MM/yyyy').format(selectedDate),
@@ -278,7 +310,10 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.arrow_drop_down, color: Color(0xFF2962FF)),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: Color(0xFF2962FF),
+                        ),
                       ],
                     ),
                   ),
@@ -286,13 +321,15 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
               ],
             ),
           ),
-          
+
           // Reservations list
           Expanded(
             child: Consumer<ReservationProvider>(
               builder: (context, provider, child) {
-                final reservations = _getReservationsForDate(provider.reservations);
-                
+                final reservations = _getReservationsForDate(
+                  provider.reservations,
+                );
+
                 if (reservations.isEmpty) {
                   return Center(
                     child: Column(
@@ -323,7 +360,7 @@ class _GeneralReservationsScreenState extends State<GeneralReservationsScreen> {
                     ),
                   );
                 }
-                
+
                 return ListView.builder(
                   padding: const EdgeInsets.all(20),
                   itemCount: reservations.length,

@@ -4,6 +4,7 @@ import 'package:my_reservation_app/features/home/widgets/menu_card.dart';
 import 'package:my_reservation_app/features/reservations/screens/reservations_screen.dart';
 import 'package:my_reservation_app/features/reservations/screens/general_reservations_screen.dart';
 import 'package:my_reservation_app/providers/reservation_provider.dart';
+import 'package:my_reservation_app/widgets/app_drawer.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,18 +14,24 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const Icon(Icons.home, color: Colors.white),
-        title: const Text('Bem-Vindo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: const Text(
+          'Bem-Vindo',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF194098),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onPressed: () {
-            // Ação do botão de menu
-            },
-          ),  
-       ]
+          Builder(
+            builder:
+                (context) => IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () {
+                    Scaffold.of(context).openEndDrawer();
+                  },
+                ),
+          ),
+        ],
       ),
+      endDrawer: const AppDrawer(currentRoute: 'home'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -43,7 +50,8 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ReservationsScreen(initialTab: 0),
+                    builder:
+                        (context) => const ReservationsScreen(initialTab: 0),
                   ),
                 );
               },
@@ -52,16 +60,22 @@ class HomeScreen extends StatelessWidget {
             Consumer<ReservationProvider>(
               builder: (context, reservationProvider, child) {
                 return MenuCard(
-                  title: 'Minhas Reservas (${reservationProvider.reservationCount})',
-                  subtitle: 'Visualize, gerencie ou cancele seus agendamentos futuros.',
+                  title:
+                      'Minhas Reservas (${reservationProvider.reservationCount})',
+                  subtitle:
+                      'Visualize, gerencie ou cancele seus agendamentos futuros.',
                   icon: Icons.calendar_today,
                   color: const Color(0xFFFFF9C4), // Amarelo suave
-                  textColor: const Color(0xFFF57C00), // Laranja/marrom para texto
+                  textColor: const Color(
+                    0xFFF57C00,
+                  ), // Laranja/marrom para texto
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const ReservationsScreen(initialTab: 1),
+                        builder:
+                            (context) =>
+                                const ReservationsScreen(initialTab: 1),
                       ),
                     );
                   },
@@ -71,7 +85,8 @@ class HomeScreen extends StatelessWidget {
 
             MenuCard(
               title: 'Reservas Gerais',
-              subtitle: 'Veja a disponibilidade de todos os recursos da escola.',
+              subtitle:
+                  'Veja a disponibilidade de todos os recursos da escola.',
               icon: Icons.grid_view,
               color: const Color(0xFFE1D5F5), // Roxo suave
               textColor: const Color(0xFF6A1B9A), // Roxo escuro para texto
@@ -87,7 +102,7 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-    );  
+    );
   }
 
   Widget _buildHeaderCard() {
@@ -111,19 +126,13 @@ class HomeScreen extends StatelessWidget {
           SizedBox(height: 4),
           Text(
             'Escola do Mar',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 16),
           ),
           SizedBox(height: 12),
           Text(
             'Faça sua reserva de salas ou equipamentos em poucos passos!',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-            ),
-          )
+            style: TextStyle(color: Colors.white, fontSize: 14),
+          ),
         ],
       ),
     );

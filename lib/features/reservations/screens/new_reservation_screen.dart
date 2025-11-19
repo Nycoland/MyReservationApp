@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:my_reservation_app/models/reservation.dart';
 import 'package:my_reservation_app/providers/reservation_provider.dart';
 import 'package:my_reservation_app/features/reservations/screens/my_reservations_screen.dart';
 
@@ -83,15 +82,15 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
             children: [
               const Text(
                 'Selecione a Sala',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               ...rooms.map((room) {
                 return ListTile(
-                  leading: const Icon(Icons.meeting_room, color: Color(0xFF2962FF)),
+                  leading: const Icon(
+                    Icons.meeting_room,
+                    color: Color(0xFF2962FF),
+                  ),
                   title: Text(room),
                   onTap: () {
                     setState(() {
@@ -123,10 +122,7 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
             children: [
               const Text(
                 'Selecione o Equipamento',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               ...equipment.map((equip) {
@@ -163,15 +159,15 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
             children: [
               const Text(
                 'Selecione o Período',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               ...periods.map((period) {
                 return ListTile(
-                  leading: const Icon(Icons.access_time, color: Color(0xFF2962FF)),
+                  leading: const Icon(
+                    Icons.access_time,
+                    color: Color(0xFF2962FF),
+                  ),
                   title: Text(period),
                   onTap: () {
                     setState(() {
@@ -188,7 +184,7 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
     );
   }
 
-  void _makeReservation() {
+  void _makeReservation() async {
     if (selectedRoom == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -209,113 +205,128 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
       return;
     }
 
-    // Create reservation object
-    final reservation = Reservation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      professorName: 'Prof. Brunna M.',
-      room: selectedRoom,
-      equipment: selectedEquipment,
+    // Add reservation through provider
+    final provider = Provider.of<ReservationProvider>(context, listen: false);
+    final result = await provider.addReservation(
+      room: selectedRoom!,
+      equipment: selectedEquipment!,
       date: selectedDate,
-      period: selectedPeriod,
+      period: selectedPeriod!,
     );
 
-    // Show success dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFE8F5E9),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFF4CAF50), width: 2),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.check_circle,
-              color: Color(0xFF4CAF50),
-              size: 64,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Reserva efetuada!',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2E7D32),
+    if (!mounted) return;
+
+    if (result['success'] == true) {
+      // Show success dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (context) => AlertDialog(
+              backgroundColor: const Color(0xFFE8F5E9),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xFF4CAF50), width: 2),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              selectedRoom ?? '',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2E7D32),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '(${_formatPeriod(selectedPeriod)})',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF2E7D32),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Add reservation to provider
-                  Provider.of<ReservationProvider>(context, listen: false)
-                      .addReservation(reservation);
-                  
-                  Navigator.pop(context); // Close dialog
-                  
-                  // Get all reservations from provider
-                  final allReservations = Provider.of<ReservationProvider>(context, listen: false).reservations;
-                  
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MyReservationsScreen(
-                        reservations: allReservations,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFF4CAF50),
+                    size: 64,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Reserva efetuada!',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2E7D32),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    selectedRoom!,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2E7D32),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '(${_formatPeriod(selectedPeriod!)})',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF2E7D32),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Close dialog
+
+                        // Get only current user's reservations from provider
+                        final provider = Provider.of<ReservationProvider>(
+                          context,
+                          listen: false,
+                        );
+                        final userReservations = provider.getUserReservations();
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => MyReservationsScreen(
+                                  reservations: userReservations,
+                                ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4CAF50),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'OK',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
                   ),
-                ),
-                child: const Text(
-                  'OK',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                ],
               ),
             ),
-          ],
+      );
+    } else {
+      // Show error dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Erro ao criar reserva'),
+          backgroundColor: Colors.red,
         ),
-      ),
-    );
+      );
+    }
   }
 
   String _formatPeriod(String? period) {
     if (period == null) return '';
     // Extract time from period like "Manhã (08:00 - 12:00)"
-    final timeMatch = RegExp(r'\((\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})\)').firstMatch(period);
+    final timeMatch = RegExp(
+      r'\((\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})\)',
+    ).firstMatch(period);
     if (timeMatch != null) {
       return '${timeMatch.group(1)} - ${timeMatch.group(2)}';
     }
@@ -331,7 +342,8 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.home, color: Colors.white),
-          onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+          onPressed:
+              () => Navigator.popUntil(context, (route) => route.isFirst),
         ),
         title: const Text(
           'Bem-vindo',
@@ -363,9 +375,10 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: selectedTab == 0
-                                ? const Color(0xFF2962FF)
-                                : Colors.transparent,
+                            color:
+                                selectedTab == 0
+                                    ? const Color(0xFF2962FF)
+                                    : Colors.transparent,
                             width: 3,
                           ),
                         ),
@@ -375,17 +388,19 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
                         children: [
                           Icon(
                             Icons.book,
-                            color: selectedTab == 0
-                                ? const Color(0xFF2962FF)
-                                : Colors.grey,
+                            color:
+                                selectedTab == 0
+                                    ? const Color(0xFF2962FF)
+                                    : Colors.grey,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'Nova Reserva',
                             style: TextStyle(
-                              color: selectedTab == 0
-                                  ? const Color(0xFF2962FF)
-                                  : Colors.grey,
+                              color:
+                                  selectedTab == 0
+                                      ? const Color(0xFF2962FF)
+                                      : Colors.grey,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
@@ -398,14 +413,20 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      // Navigate to My Reservations screen
-                      final reservations = Provider.of<ReservationProvider>(context, listen: false).reservations;
+                      // Navigate to My Reservations screen with only current user's reservations
+                      final provider = Provider.of<ReservationProvider>(
+                        context,
+                        listen: false,
+                      );
+                      final userReservations = provider.getUserReservations();
+
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => MyReservationsScreen(
-                            reservations: reservations,
-                          ),
+                          builder:
+                              (context) => MyReservationsScreen(
+                                reservations: userReservations,
+                              ),
                         ),
                       );
                     },
@@ -450,6 +471,7 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
           // Content
           Expanded(
             child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -471,27 +493,34 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
                   const SizedBox(height: 24),
 
                   // Professor Name
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE3F2FD),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFBBDEFB)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.person, color: Color(0xFF1976D2)),
-                        SizedBox(width: 12),
-                        Text(
-                          'Reservando como: Prof. Brunna M.',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF1565C0),
-                            fontWeight: FontWeight.w500,
-                          ),
+                  Consumer<ReservationProvider>(
+                    builder: (context, provider, child) {
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE3F2FD),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFBBDEFB)),
                         ),
-                      ],
-                    ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.person, color: Color(0xFF1976D2)),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Reservando como: ${provider.currentUser?.name ?? "Usuário"}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF1565C0),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
 
@@ -523,9 +552,10 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
                               selectedRoom ?? 'Selecione a Sala',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: selectedRoom != null
-                                    ? Colors.black
-                                    : Colors.grey,
+                                color:
+                                    selectedRoom != null
+                                        ? Colors.black
+                                        : Colors.grey,
                               ),
                             ),
                           ),
@@ -560,12 +590,14 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              selectedEquipment ?? 'Não se Aplica (Apenas Sala)',
+                              selectedEquipment ??
+                                  'Não se Aplica (Apenas Sala)',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: selectedEquipment != null
-                                    ? Colors.black
-                                    : Colors.grey,
+                                color:
+                                    selectedEquipment != null
+                                        ? Colors.black
+                                        : Colors.grey,
                               ),
                             ),
                           ),
@@ -599,16 +631,26 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.shade300),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.calendar_today,
-                                        color: Colors.grey, size: 20),
+                                    const Icon(
+                                      Icons.calendar_today,
+                                      color: Colors.grey,
+                                      size: 20,
+                                    ),
                                     const SizedBox(width: 12),
-                                    Text(
-                                      DateFormat('dd/MM/yyyy').format(selectedDate),
-                                      style: const TextStyle(fontSize: 16),
+                                    Expanded(
+                                      child: Text(
+                                        DateFormat(
+                                          'dd/MM/yyyy',
+                                        ).format(selectedDate),
+                                        style: const TextStyle(fontSize: 16),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -639,21 +681,28 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.shade300),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.access_time,
-                                        color: Colors.grey, size: 20),
+                                    const Icon(
+                                      Icons.access_time,
+                                      color: Colors.grey,
+                                      size: 20,
+                                    ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
-                                        selectedPeriod?.split(' ')[0] ?? 'Selecione',
+                                        selectedPeriod?.split(' ')[0] ??
+                                            'Selecione',
                                         style: TextStyle(
                                           fontSize: 16,
-                                          color: selectedPeriod != null
-                                              ? Colors.black
-                                              : Colors.grey,
+                                          color:
+                                              selectedPeriod != null
+                                                  ? Colors.black
+                                                  : Colors.grey,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -692,6 +741,9 @@ class _NewReservationScreenState extends State<NewReservationScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(
+                    height: 40,
+                  ), // Extra space for better scrolling
                 ],
               ),
             ),

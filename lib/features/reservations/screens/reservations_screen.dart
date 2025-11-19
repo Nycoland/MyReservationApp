@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:my_reservation_app/models/reservation.dart';
 import 'package:my_reservation_app/providers/reservation_provider.dart';
 import 'package:my_reservation_app/widgets/custom_dropdown.dart';
+import 'package:my_reservation_app/widgets/app_drawer.dart';
+import 'package:my_reservation_app/features/home/screens/HomeScreen.dart';
 
 class ReservationsScreen extends StatefulWidget {
   final int initialTab;
@@ -105,7 +107,7 @@ class _ReservationsScreenState extends State<ReservationsScreen>
     }
   }
 
-  void _makeReservation() {
+  void _makeReservation() async {
     if (selectedRoom == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -126,132 +128,130 @@ class _ReservationsScreenState extends State<ReservationsScreen>
       return;
     }
 
-    // Create reservation object
-    final reservation = Reservation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      professorName: 'Prof. Brunna M.',
-      room: selectedRoom,
-      equipment: selectedEquipment,
+    // Use backend service to create reservation
+    final provider = Provider.of<ReservationProvider>(context, listen: false);
+    final result = await provider.addReservation(
+      room: selectedRoom!,
+      equipment: selectedEquipment ?? 'Não se Aplica',
       date: selectedDate,
-      period: selectedPeriod,
+      period: selectedPeriod!,
     );
 
-    // Show success dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: const Color(0xFFE8F5E9),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: const BorderSide(color: Color(0xFF4CAF50), width: 2),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: Color(0xFF4CAF50),
-                  size: 64,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Reserva efetuada!',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2E7D32),
+    if (!mounted) return;
+
+    if (result['success'] == true) {
+      // Show success dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (context) => AlertDialog(
+              backgroundColor: const Color(0xFFE8F5E9),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFF4CAF50),
+                    size: 64,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  selectedRoom ?? '',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E7D32),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Reserva efetuada!',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2E7D32),
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '(${_formatPeriod(selectedPeriod)})',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF2E7D32),
+                  const SizedBox(height: 8),
+                  Text(
+                    selectedRoom ?? '',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2E7D32),
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Add reservation to provider
-                      Provider.of<ReservationProvider>(
-                        context,
-                        listen: false,
-                      ).addReservation(reservation);
+                  const SizedBox(height: 4),
+                  Text(
+                    '(${_formatPeriod(selectedPeriod)})',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF2E7D32),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Close dialog
 
-                      Navigator.pop(context); // Close dialog
+                        // Switch to My Reservations tab and show banner
+                        _tabController.animateTo(1);
+                        setState(() {
+                          _showSuccessBanner = true;
+                        });
 
-                      // Switch to My Reservations tab and show banner
-                      _tabController.animateTo(1);
-                      setState(() {
-                        _showSuccessBanner = true;
-                      });
+                        // Hide banner after 3 seconds
+                        Future.delayed(const Duration(seconds: 3), () {
+                          if (mounted) {
+                            setState(() {
+                              _showSuccessBanner = false;
+                            });
+                          }
+                        });
 
-                      // Hide banner after 3 seconds
-                      Future.delayed(const Duration(seconds: 3), () {
-                        if (mounted) {
-                          setState(() {
-                            _showSuccessBanner = false;
-                          });
-                        }
-                      });
-
-                      // Reset form
-                      setState(() {
-                        selectedRoom = null;
-                        selectedEquipment = null;
-                        selectedDate = DateTime.now();
-                        selectedPeriod = null;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        // Reset form
+                        setState(() {
+                          selectedRoom = null;
+                          selectedEquipment = null;
+                          selectedDate = DateTime.now();
+                          selectedPeriod = null;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4CAF50),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'OK',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'OK',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-    );
+      );
+    } else {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Erro ao criar reserva'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 
-  void _cancelReservation(Reservation reservation) {
-    // Check if cancellation is within 30 minutes of the start time
-    final canCancel = _canCancelReservation(reservation);
-
-    if (!canCancel) {
-      _showRestrictedCancellationDialog();
-      return;
-    }
-
+  void _cancelReservation(Reservation reservation) async {
     showDialog(
       context: context,
       builder:
@@ -266,20 +266,38 @@ class _ReservationsScreenState extends State<ReservationsScreen>
                 child: const Text('Não'),
               ),
               TextButton(
-                onPressed: () {
-                  // Remove from provider
-                  Provider.of<ReservationProvider>(
+                onPressed: () async {
+                  Navigator.pop(context);
+
+                  // Use backend service to cancel reservation
+                  final provider = Provider.of<ReservationProvider>(
                     context,
                     listen: false,
-                  ).removeReservation(reservation.id);
-
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Reserva cancelada com sucesso!'),
-                      backgroundColor: Colors.orange,
-                    ),
                   );
+                  final result = await provider.removeReservation(
+                    reservation.id,
+                  );
+
+                  if (!mounted) return;
+
+                  if (result['success'] == true) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Reserva cancelada com sucesso!'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          result['message'] ?? 'Erro ao cancelar reserva',
+                        ),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 4),
+                      ),
+                    );
+                  }
                 },
                 child: const Text(
                   'Sim, Cancelar',
@@ -287,111 +305,6 @@ class _ReservationsScreenState extends State<ReservationsScreen>
                 ),
               ),
             ],
-          ),
-    );
-  }
-
-  bool _canCancelReservation(Reservation reservation) {
-    // Extract start time from period
-    final periodMatch = RegExp(
-      r'(\d{2}):(\d{2})',
-    ).firstMatch(reservation.period ?? '');
-    if (periodMatch == null) return true;
-
-    final hour = int.parse(periodMatch.group(1)!);
-    final minute = int.parse(periodMatch.group(2)!);
-
-    // Create DateTime for reservation start
-    final reservationStart = DateTime(
-      reservation.date.year,
-      reservation.date.month,
-      reservation.date.day,
-      hour,
-      minute,
-    );
-
-    // Check if current time is more than 30 minutes before start
-    final now = DateTime.now();
-    final difference = reservationStart.difference(now);
-
-    return difference.inMinutes > 30;
-  }
-
-  void _showRestrictedCancellationDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Cancelamento Restrito',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFD32F2F),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.grey),
-                        onPressed: () => Navigator.pop(context),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Esta reserva não pode ser cancelada. O prazo limite para cancelamento é de **30 minutos** antes do horário de início do agendamento.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Por favor, entre em contato com a administração caso seja uma emergência.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2962FF),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Entendido',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
     );
   }
@@ -408,6 +321,8 @@ class _ReservationsScreenState extends State<ReservationsScreen>
   }
 
   Widget _buildNewReservationTab() {
+    final provider = Provider.of<ReservationProvider>(context, listen: false);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -434,16 +349,19 @@ class _ReservationsScreenState extends State<ReservationsScreen>
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFBBDEFB)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.person, color: Color(0xFF1976D2)),
-                SizedBox(width: 12),
-                Text(
-                  'Reservando como: Prof. Brunna M.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF1565C0),
-                    fontWeight: FontWeight.w500,
+                const Icon(Icons.person, color: Color(0xFF1976D2)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Reservando como: ${provider.currentUser?.name ?? "Usuário"}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF1565C0),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -513,9 +431,12 @@ class _ReservationsScreenState extends State<ReservationsScreen>
                               size: 20,
                             ),
                             const SizedBox(width: 12),
-                            Text(
-                              DateFormat('dd/MM/yyyy').format(selectedDate),
-                              style: const TextStyle(fontSize: 16),
+                            Expanded(
+                              child: Text(
+                                DateFormat('dd/MM/yyyy').format(selectedDate),
+                                style: const TextStyle(fontSize: 16),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ],
                         ),
@@ -575,7 +496,7 @@ class _ReservationsScreenState extends State<ReservationsScreen>
   Widget _buildMyReservationsTab() {
     return Consumer<ReservationProvider>(
       builder: (context, reservationProvider, child) {
-        final reservations = reservationProvider.reservations;
+        final reservations = reservationProvider.getUserReservations();
         final latestReservation =
             reservations.isNotEmpty ? reservations.last : null;
 
@@ -688,8 +609,7 @@ class _ReservationsScreenState extends State<ReservationsScreen>
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
-                                          reservation.room ??
-                                              'Sala não especificada',
+                                          reservation.room,
                                           style: const TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
@@ -722,9 +642,8 @@ class _ReservationsScreenState extends State<ReservationsScreen>
                                   const SizedBox(height: 8),
 
                                   // Equipment
-                                  if (reservation.equipment != null &&
-                                      reservation.equipment !=
-                                          'Não se Aplica (Apenas Sala)')
+                                  if (reservation.equipment !=
+                                      'Não se Aplica (Apenas Sala)')
                                     Row(
                                       children: [
                                         const Icon(
@@ -743,9 +662,8 @@ class _ReservationsScreenState extends State<ReservationsScreen>
                                         ),
                                       ],
                                     ),
-                                  if (reservation.equipment != null &&
-                                      reservation.equipment !=
-                                          'Não se Aplica (Apenas Sala)')
+                                  if (reservation.equipment !=
+                                      'Não se Aplica (Apenas Sala)')
                                     const SizedBox(height: 8),
 
                                   // Date and Time
@@ -815,20 +733,6 @@ class _ReservationsScreenState extends State<ReservationsScreen>
                                           ),
                                         ),
                                       ),
-                                      if (!_canCancelReservation(reservation))
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            left: 8,
-                                          ),
-                                          child: Text(
-                                            '(Prazo expirado)',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey[600],
-                                              fontStyle: FontStyle.italic,
-                                            ),
-                                          ),
-                                        ),
                                     ],
                                   ),
                                 ],
@@ -846,6 +750,10 @@ class _ReservationsScreenState extends State<ReservationsScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Determine which route we're on based on the initial tab
+    final String currentRoute =
+        _tabController.index == 0 ? 'new_reservation' : 'my_reservations';
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -853,8 +761,13 @@ class _ReservationsScreenState extends State<ReservationsScreen>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.home, color: Colors.white),
-          onPressed:
-              () => Navigator.popUntil(context, (route) => route.isFirst),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              (route) => false,
+            );
+          },
         ),
         title: const Text(
           'Bem-vindo',
@@ -865,9 +778,14 @@ class _ReservationsScreenState extends State<ReservationsScreen>
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onPressed: () {},
+          Builder(
+            builder:
+                (context) => IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () {
+                    Scaffold.of(context).openEndDrawer();
+                  },
+                ),
           ),
         ],
         bottom: TabBar(
@@ -898,6 +816,7 @@ class _ReservationsScreenState extends State<ReservationsScreen>
           ],
         ),
       ),
+      endDrawer: AppDrawer(currentRoute: currentRoute),
       body: TabBarView(
         controller: _tabController,
         children: [_buildNewReservationTab(), _buildMyReservationsTab()],

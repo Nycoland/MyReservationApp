@@ -110,46 +110,49 @@ class _CustomDropdownState extends State<CustomDropdown> {
                         ),
                       ),
                       // Items list
-                      Flexible(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          itemCount: widget.items.length,
-                          itemBuilder: (context, index) {
-                            final item = widget.items[index];
-                            final isRed = item.contains('Não se Aplica');
-                            final isLast = index == widget.items.length - 1;
+                      Expanded(
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: ListView.builder(
+                            padding: EdgeInsets.zero,
+                            itemCount: widget.items.length,
+                            itemBuilder: (context, index) {
+                              final item = widget.items[index];
+                              final isRed = item.contains('Não se Aplica');
+                              final isLast = index == widget.items.length - 1;
 
-                            return InkWell(
-                              onTap: () {
-                                widget.onSelect(item);
-                                _toggleDropdown();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom:
-                                        isLast
-                                            ? BorderSide.none
-                                            : BorderSide(
-                                              color: Colors.grey.shade200,
-                                            ),
+                              return InkWell(
+                                onTap: () {
+                                  widget.onSelect(item);
+                                  _toggleDropdown();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom:
+                                          isLast
+                                              ? BorderSide.none
+                                              : BorderSide(
+                                                color: Colors.grey.shade200,
+                                              ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color:
+                                          isRed ? Colors.red : Colors.black87,
+                                    ),
                                   ),
                                 ),
-                                child: Text(
-                                  item,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: isRed ? Colors.red : Colors.black87,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ],
